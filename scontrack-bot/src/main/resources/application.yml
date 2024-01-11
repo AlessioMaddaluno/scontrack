@@ -1,0 +1,24 @@
+spring:
+  # SQL Server Database Configuration ----------------------
+  datasource:
+    url: jdbc:sqlserver://scontrack-db.database.windows.net:1433;database=scontrack-db;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;
+    username: ${AZ_DATABASE_USER}
+    password: ${AZ_DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: create
+# ----------------------------------------------------------
+
+# Telegram BOT Configuration -------------------------------
+telegram:
+  token: ${TELEGRAM_TOKEN}
+  bot-name: scontrack-bot
+# ----------------------------------------------------------
+
+# Azure Resources Configuration ----------------------------
+azure:
+  blob-storage:
+    connection: DefaultEndpointsProtocol=https;AccountName=scontracksa;AccountKey=${AZURE_BLOB_STORAGE_KEY}aZ;EndpointSuffix=core.windows.net
+  blob-storage-endpoint: https://scontrack.blob.core.windows.net/scontrack-images/
+  receipt-ai-analyzer: ${AZURE_RECEIPTS_AI_ENDPOINT}
+# ----------------------------------------------------------
