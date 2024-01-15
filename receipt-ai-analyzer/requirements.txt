@@ -6,3 +6,4 @@ azure-functions
 azure-identity
 azure-ai-formrecognizer
 azure-core
+python-dateutil

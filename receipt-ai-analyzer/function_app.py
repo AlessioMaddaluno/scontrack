@@ -4,6 +4,7 @@ from azure.ai.formrecognizer import DocumentAnalysisClient
 import logging
 import json
 import os
+from dateutil import parser
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
@@ -33,7 +34,7 @@ def receipt_analyzer(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(url)
 
     result = analyze_receipt(url)
-    if not result['is_valid']:
+    if result['is_valid'] == False:
         logging.info('Risultato non valido')
 
     return func.HttpResponse(
@@ -46,7 +47,7 @@ def analyze_receipt(url):
     result = {'is_valid': False}
 
     endpoint = "https://westeurope.api.cognitive.microsoft.com/"
-    ai_analyzer_key = os.environ.get('AI_ANALYZER_KEY')
+    ai_analyzer_key = os.environ['AI_ANALYZER_KEY']
 
     accuracy_threshold = 0.70
 
@@ -80,10 +81,18 @@ def analyze_receipt(url):
 
 def extract_and_validate(result, key, field, threshold):
     if field:
-        result[key] = {'value': str(field.value), 'confidence': field.confidence}
-        result['is_valid'] = result['is_valid'] and (field.confidence >= threshold)
+        if key == 'transaction_date':
+            logging.info(field.content)
+            result[key] = {'value': str(parse_date_string(field.content)), 'confidence': field.confidence}
+        else:
+            result[key] = {'value': str(field.value), 'confidence': field.confidence}
+        
+        if field.confidence > threshold:
+            result['is_valid'] = True
     else:
         result[key] = None
+        result['is_valid'] = False
+
 
 def extract_type(doc_type):
     type_mapping = {
@@ -94,3 +103,7 @@ def extract_type(doc_type):
         'receipt.hotel': 'HOTEL'
     }
     return type_mapping.get(doc_type, 'OTHER')
+
+def parse_date_string(date_str):
+    date_obj = parser.parse(date_str,dayfirst=True)
+    return date_obj.strftime("%Y-%m-%d")
